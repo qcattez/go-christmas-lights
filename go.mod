@@ -1,4 +1,4 @@
-module go-christmas-light
+module go-christmas-lights
 
 go 1.18
 
