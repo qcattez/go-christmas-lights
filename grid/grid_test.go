@@ -5,9 +5,6 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// turn 10,0 11,0 -> 1 light on
-// turn 1 light on
-
 var _ = Describe("Grid", func() {
 	It("should create a grid with lights turned off", func() {
 		grid := New()

@@ -2,15 +2,15 @@ package grid
 
 type Grid interface {
 	LightsOn() int
-	TurnOn(p1a int, p1o int, p2a int, p2o int)
+	TurnOn(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int)
 }
 
 type grid struct {
 	lights int
 }
 
-func (g *grid) TurnOn(p1a int, p1o int, p2a int, p2o int) {
-	g.lights = (p2a - p1a + 1) * (p2o - p1o + 1)
+func (g *grid) TurnOn(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) {
+	g.lights = (absiss2 - absiss1 + 1) * (ordinate2 - ordinate1 + 1)
 }
 
 func (g grid) LightsOn() int {
