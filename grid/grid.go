@@ -1,71 +1,70 @@
 package grid
 
 type Grid interface {
-	LightsOn() int
+	Brightness() int
 	TurnOn(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int)
 	TurnOff(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int)
 	Toogle(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int)
 }
 
-type point struct {
+type coordinate struct {
 	absiss   int
 	ordinate int
 }
 
 type grid struct {
-	lightsOn map[point]bool
+	brightnessPerLight map[coordinate]int
 }
 
 func New() Grid {
 	grid := grid{}
-	grid.lightsOn = make(map[point]bool)
+	grid.brightnessPerLight = make(map[coordinate]int)
 	return &grid
 }
 
-func (g grid) LightsOn() int {
-	return len(g.lightsOn)
+func (g grid) Brightness() int {
+	totalBrightness := 0
+	for _, brightness := range g.brightnessPerLight {
+		totalBrightness += brightness
+	}
+	return totalBrightness
 }
 
 func (g *grid) TurnOn(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) {
-	for _, point := range allPointsBetween(point{absiss1, ordinate1}, point{absiss2, ordinate2}) {
-		g.turnOnLight(point)
+	for _, coordinate := range allCoordinatesInTheSquare(coordinate{absiss1, ordinate1}, coordinate{absiss2, ordinate2}) {
+		g.increaseBrightnessBy1(coordinate)
 	}
 }
 
-func (g *grid) turnOnLight(point point) {
-	g.lightsOn[point] = true
+func (g *grid) increaseBrightnessBy1(coordinate coordinate) {
+	g.brightnessPerLight[coordinate]++
 }
 
 func (g *grid) TurnOff(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) {
-	for _, point := range allPointsBetween(point{absiss1, ordinate1}, point{absiss2, ordinate2}) {
-		g.turnOffLight(point)
+	for _, coordinate := range allCoordinatesInTheSquare(coordinate{absiss1, ordinate1}, coordinate{absiss2, ordinate2}) {
+		g.decreaseBrightnessBy1(coordinate)
 	}
 }
 
-func (g *grid) turnOffLight(point point) {
-	delete(g.lightsOn, point)
+func (g *grid) decreaseBrightnessBy1(coordinate coordinate) {
+	if g.brightnessPerLight[coordinate] > 0 {
+		g.brightnessPerLight[coordinate]--
+	}
 }
 
 func (g *grid) Toogle(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) {
-	for _, point := range allPointsBetween(point{absiss1, ordinate1}, point{absiss2, ordinate2}) {
-		if g.lightIsOn(point) {
-			g.turnOffLight(point)
-			continue
-		}
-		g.turnOnLight(point)
+	for _, coordinate := range allCoordinatesInTheSquare(coordinate{absiss1, ordinate1}, coordinate{absiss2, ordinate2}) {
+		g.increaseBrightnessBy1(coordinate)
+		g.increaseBrightnessBy1(coordinate)
 	}
 }
 
-func (g grid) lightIsOn(point point) bool {
-	return g.lightsOn[point]
-}
-
-func allPointsBetween(firstPoint point, lastPoint point) []point {
-	var rowPoints []point
+func allCoordinatesInTheSquare(firstPoint coordinate, lastPoint coordinate) []coordinate {
+	var rowPoints []coordinate
 
 	for absiss := firstPoint.absiss; absiss <= lastPoint.absiss; absiss++ {
 		for ordinate := firstPoint.ordinate; ordinate <= lastPoint.ordinate; ordinate++ {
-			rowPoints = append(rowPoints, point{absiss, ordinate})
+			rowPoints = append(rowPoints, coordinate{absiss, ordinate})
 		}
 	}
 
