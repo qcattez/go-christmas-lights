@@ -12,7 +12,7 @@ var _ = Describe("Grid", func() {
 		grid = New()
 	})
 
-	It("should create a grid with lights turned off", func() {
+	It("should create a grid with lightsOn turned off", func() {
 		Expect(grid.LightsOn()).To(Equal(0))
 	})
 
@@ -43,9 +43,18 @@ var _ = Describe("Grid", func() {
 			Expect(grid.LightsOn()).To(Equal(2))
 		})
 
-		//It("should turn on 1 row of several lights", func() {
-		//	grid.TurnOn(1, 0, 3, 0)
-		//	Expect(grid.LightsOn()).To(Equal(3))
-		//})
+		It("should turn off 1 row of 2 lights", func() {
+			grid.TurnOn(0, 0, 1, 0)
+			grid.TurnOff(1, 0, 2, 0)
+			Expect(grid.LightsOn()).To(Equal(1))
+		})
+
+		It("should turn on a row of several lights", func() {
+			grid.TurnOn(1, 0, 5, 0)
+			Expect(grid.LightsOn()).To(Equal(5))
+		})
 	})
+
+	// turn on 3 lightsOn in row
+	// turn off 3 lightsOn in row
 })

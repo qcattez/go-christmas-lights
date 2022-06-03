@@ -1,7 +1,5 @@
 package grid
 
-import "reflect"
-
 type Grid interface {
 	LightsOn() int
 	TurnOn(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int)
@@ -9,8 +7,7 @@ type Grid interface {
 }
 
 type grid struct {
-	lightRow  []point
-	lightIsOn bool
+	lightsOn map[point]bool
 }
 
 type point struct {
@@ -18,32 +15,38 @@ type point struct {
 	ordinate int
 }
 
-func (g *grid) TurnOn(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) {
-	g.lightRow = createLightRow(absiss1, ordinate1, absiss2, ordinate2)
+func (p point) next() point {
+	return point{p.absiss + 1, p.ordinate}
 }
 
-func createLightRow(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) []point {
-	point1 := point{absiss1, ordinate1}
-	point2 := point{absiss2, ordinate2}
+func (g *grid) TurnOn(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) {
+	for _, point := range createRow(point{absiss1, ordinate1}, point{absiss2, ordinate2}) {
+		g.lightsOn[point] = true
+	}
+}
 
-	if point1 == point2 {
-		return []point{point1}
+func createRow(point1 point, point2 point) []point {
+	var rowPoints []point
+
+	for p := point1; p != point2; p = p.next() {
+		rowPoints = append(rowPoints, p)
 	}
 
-	return []point{point1, point2}
+	return append(rowPoints, point2)
 }
 
 func (g *grid) TurnOff(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) {
-	row := createLightRow(absiss1, ordinate1, absiss2, ordinate2)
-	if reflect.DeepEqual(g.lightRow, row) {
-		g.lightRow = []point{}
+	for _, point := range createRow(point{absiss1, ordinate1}, point{absiss2, ordinate2}) {
+		delete(g.lightsOn, point)
 	}
 }
 
 func (g grid) LightsOn() int {
-	return len(g.lightRow)
+	return len(g.lightsOn)
 }
 
 func New() Grid {
-	return &grid{}
+	grid := grid{}
+	grid.lightsOn = make(map[point]bool)
+	return &grid
 }
