@@ -4,10 +4,7 @@ type Grid interface {
 	LightsOn() int
 	TurnOn(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int)
 	TurnOff(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int)
-}
-
-type grid struct {
-	lightsOn map[point]bool
+	Toogle(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int)
 }
 
 type point struct {
@@ -15,38 +12,62 @@ type point struct {
 	ordinate int
 }
 
-func (p point) next() point {
-	return point{p.absiss + 1, p.ordinate}
-}
-
-func (g *grid) TurnOn(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) {
-	for _, point := range createRow(point{absiss1, ordinate1}, point{absiss2, ordinate2}) {
-		g.lightsOn[point] = true
-	}
-}
-
-func createRow(point1 point, point2 point) []point {
-	var rowPoints []point
-
-	for p := point1; p != point2; p = p.next() {
-		rowPoints = append(rowPoints, p)
-	}
-
-	return append(rowPoints, point2)
-}
-
-func (g *grid) TurnOff(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) {
-	for _, point := range createRow(point{absiss1, ordinate1}, point{absiss2, ordinate2}) {
-		delete(g.lightsOn, point)
-	}
-}
-
-func (g grid) LightsOn() int {
-	return len(g.lightsOn)
+type grid struct {
+	lightsOn map[point]bool
 }
 
 func New() Grid {
 	grid := grid{}
 	grid.lightsOn = make(map[point]bool)
 	return &grid
+}
+
+func (g grid) LightsOn() int {
+	return len(g.lightsOn)
+}
+
+func (g *grid) TurnOn(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) {
+	for _, point := range allPointsBetween(point{absiss1, ordinate1}, point{absiss2, ordinate2}) {
+		g.turnOnLight(point)
+	}
+}
+
+func (g *grid) turnOnLight(point point) {
+	g.lightsOn[point] = true
+}
+
+func (g *grid) TurnOff(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) {
+	for _, point := range allPointsBetween(point{absiss1, ordinate1}, point{absiss2, ordinate2}) {
+		g.turnOffLight(point)
+	}
+}
+
+func (g *grid) turnOffLight(point point) {
+	delete(g.lightsOn, point)
+}
+
+func (g *grid) Toogle(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) {
+	for _, point := range allPointsBetween(point{absiss1, ordinate1}, point{absiss2, ordinate2}) {
+		if g.lightIsOn(point) {
+			g.turnOffLight(point)
+			continue
+		}
+		g.turnOnLight(point)
+	}
+}
+
+func (g grid) lightIsOn(point point) bool {
+	return g.lightsOn[point]
+}
+
+func allPointsBetween(firstPoint point, lastPoint point) []point {
+	var rowPoints []point
+
+	for absiss := firstPoint.absiss; absiss <= lastPoint.absiss; absiss++ {
+		for ordinate := firstPoint.ordinate; ordinate <= lastPoint.ordinate; ordinate++ {
+			rowPoints = append(rowPoints, point{absiss, ordinate})
+		}
+	}
+
+	return rowPoints
 }
