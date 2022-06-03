@@ -1,5 +1,7 @@
 package grid
 
+import "reflect"
+
 type Grid interface {
 	LightsOn() int
 	TurnOn(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int)
@@ -7,77 +9,41 @@ type Grid interface {
 }
 
 type grid struct {
-	lights                   int
-	turnOffAlreadyCalledOnce bool
-	lastSquareTurnedOff      square
-	bulbs                    map[Point]bool
+	lightRow  []point
+	lightIsOn bool
 }
 
-type square struct {
-	bottomRightPoint Point
-	topLeftPoint     Point
-}
-
-type Point struct {
+type point struct {
 	absiss   int
 	ordinate int
 }
 
-func (s square) include(otherSquare square) bool {
-	return otherSquare.bottomRightPoint.absiss >= s.bottomRightPoint.absiss && otherSquare.bottomRightPoint.ordinate >= s.bottomRightPoint.ordinate && s.topLeftPoint.absiss >= otherSquare.topLeftPoint.absiss && s.topLeftPoint.absiss >= otherSquare.topLeftPoint.ordinate
+func (g *grid) TurnOn(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) {
+	g.lightRow = createLightRow(absiss1, ordinate1, absiss2, ordinate2)
 }
 
-func (s square) area() int {
-	return len(s.points())
-}
+func createLightRow(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) []point {
+	point1 := point{absiss1, ordinate1}
+	point2 := point{absiss2, ordinate2}
 
-func (s square) points() []Point {
-	minimumAbsiss := s.bottomRightPoint.absiss
-	minimumOrdinate := s.bottomRightPoint.ordinate
-	maximumAbsiss := s.topLeftPoint.absiss
-	maximumOrdinate := s.topLeftPoint.ordinate
-
-	var points []Point
-	for j := minimumOrdinate; j <= maximumOrdinate; j++ {
-		for i := minimumAbsiss; i <= maximumAbsiss; i++ {
-			points = append(points, Point{i, j})
-		}
+	if point1 == point2 {
+		return []point{point1}
 	}
 
-	return points
+	return []point{point1, point2}
 }
 
 func (g *grid) TurnOff(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) {
-	currentSquare := square{Point{absiss1, ordinate1}, Point{absiss2, ordinate2}}
-	points := currentSquare.points()
-
-	for i := 0; i < len(points); i++ {
-		g.bulbs[points[i]] = false
-	}
-}
-
-func (g *grid) TurnOn(absiss1 int, ordinate1 int, absiss2 int, ordinate2 int) {
-	currentSquare := square{Point{absiss1, ordinate1}, Point{absiss2, ordinate2}}
-	points := currentSquare.points()
-
-	for i := 0; i < len(points); i++ {
-		g.bulbs[points[i]] = true
+	row := createLightRow(absiss1, ordinate1, absiss2, ordinate2)
+	if reflect.DeepEqual(g.lightRow, row) {
+		g.lightRow = []point{}
 	}
 }
 
 func (g grid) LightsOn() int {
-	bulbsOn := 0
-	for _, bulbIsOn := range g.bulbs {
-		if bulbIsOn {
-			bulbsOn++
-		}
-	}
-
-	return bulbsOn
+	return len(g.lightRow)
 }
 
 func New() Grid {
-	grid := grid{}
-	grid.bulbs = make(map[Point]bool)
-	return &grid
+	return &grid{}
 }
